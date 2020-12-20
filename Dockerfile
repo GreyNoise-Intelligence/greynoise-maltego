@@ -21,4 +21,5 @@ COPY . /var/www/TRX/
 
 RUN chown -R www-data:www-data /var/www/TRX/
 
-CMD ["python", "project.py", "runserver"]
+# CMD ["python", "project.py", "runserver"]
+CMD ["gunicorn", "--bind=0.0.0.0:8080", "--threads=25", "--workers=2", "project:app"]

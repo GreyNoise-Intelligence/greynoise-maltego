@@ -1,2 +1,4 @@
+futures
+gunicorn
 maltego-trx
 requests
