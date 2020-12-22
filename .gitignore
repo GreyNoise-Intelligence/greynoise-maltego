@@ -1,3 +1,6 @@
 .idea
 venv
 *.pyc
+
+# testing files
+greynoise-brad.mtz
