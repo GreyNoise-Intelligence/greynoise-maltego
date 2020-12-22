@@ -5,7 +5,7 @@ RUN mkdir /var/www/TRX/
 WORKDIR /var/www/TRX/
 
 # System dependencies
-RUN apt-get update
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install apache2 -y
 RUN apt-get install libapache2-mod-wsgi -y
 RUN apt-get install python-pip -y
