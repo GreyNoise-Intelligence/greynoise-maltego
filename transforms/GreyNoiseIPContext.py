@@ -9,18 +9,23 @@ class GreyNoiseIPContext(DiscoverableTransform):
 
     @classmethod
     def create_entities(cls, request, response):
+        if 'GNAPiKey' in request.TransformSettings:
+            api_key = request.TransformSettings['GNApiKey']
+        else:
+            # enter API key here for local transform
+            api_key = ''
         headers = {'Accept': 'application/json',
-                   'key': request.TransformSettings['GNApiKey']}
+                   'key': api_key}
         resp = requests.get('https://api.greynoise.io/v2/noise/context/{0}'.format(
             request.Value), params={}, headers=headers)
         if resp.status_code == 200:
             resp = resp.json()
             if resp['seen']:
                 response.addEntity(Person, resp['actor'])
-                response.addEntity('csr.greynoiseclassification',
+                response.addEntity('greynoise.classification',
                                    resp['classification'])
                 for tag in resp['tags']:
-                    response.addEntity('csr.greynoisetag', tag)
+                    response.addEntity('greynoise.tag', tag)
                 if resp.get('metadata'):
                     response.addEntity(ASNumber, str(
                         resp['metadata']['asn']).replace('AS', ''))
