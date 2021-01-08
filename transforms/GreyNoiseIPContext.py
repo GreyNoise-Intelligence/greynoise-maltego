@@ -1,26 +1,21 @@
-from maltego_trx.entities import IPAddress, Phrase, ASNumber, Person, Location
+from greynoise import GreyNoise
+from maltego_trx.entities import ASNumber, Person, Location
 from maltego_trx.transform import DiscoverableTransform
-import requests
-
-# Created by Adam Maxwell / @catalyst256
-
 
 class GreyNoiseIPContext(DiscoverableTransform):
 
     @classmethod
     def create_entities(cls, request, response):
-        headers = {'Accept': 'application/json',
-                   'key': request.TransformSettings['GNApiKey']}
-        resp = requests.get('https://api.greynoise.io/v2/noise/context/{0}'.format(
-            request.Value), params={}, headers=headers)
-        if resp.status_code == 200:
-            resp = resp.json()
+        api_key = request.TransformSettings['GNApiKey']
+        api_client = GreyNoise(api_key=api_key, integration_name="maltego-v1.0.0-beta")
+        try:
+            resp = api_client.ip(request.Value)
             if resp['seen']:
                 response.addEntity(Person, resp['actor'])
-                response.addEntity('csr.greynoiseclassification',
+                response.addEntity('greynoise.classification',
                                    resp['classification'])
                 for tag in resp['tags']:
-                    response.addEntity('csr.greynoisetag', tag)
+                    response.addEntity('greynoise.tag', tag)
                 if resp.get('metadata'):
                     response.addEntity(ASNumber, str(
                         resp['metadata']['asn']).replace('AS', ''))
@@ -30,8 +25,10 @@ class GreyNoiseIPContext(DiscoverableTransform):
                         resp['metadata']['city'], resp['metadata']['country']))
 
             else:
+                response.addEntity('greynoise.noise',
+                                   'No Noise Detected')
                 response.addUIMessage(
                     "This IP address hasn't been seen by GreyNoise")
-        else:
+        except Exception as e:
             response.addUIMessage(
-                'Whoops we got a {0} status code from the GreyNoise API'.format(str(resp.status_code)))
+                e)
