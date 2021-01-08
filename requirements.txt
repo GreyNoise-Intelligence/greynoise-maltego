@@ -1,5 +1,4 @@
 futures
 gunicorn
 maltego-trx
-requests
 greynoise
