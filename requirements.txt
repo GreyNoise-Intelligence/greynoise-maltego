@@ -1,4 +1,4 @@
 futures
 gunicorn
 maltego-trx
-greynoise
+greynoise>=0.7.0
