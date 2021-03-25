@@ -24,9 +24,6 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 if resp["riot"]:
                     response.addEntity("greynoise.riot", "Benign Service Detected")
                     response.addEntity(Person, resp["name"])
-                    response.addEntity(
-                        "greynoise.classification", resp["classification"]
-                    )
                     response.addEntity("greynoise.last_seen", resp["last_seen"])
                     response.addEntity("greynoise.link", resp["link"])
             else:
