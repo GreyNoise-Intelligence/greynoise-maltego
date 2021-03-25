@@ -1,4 +1,3 @@
-[![main](https://github.com/GreyNoise-Intelligence/greynoise-maltego/workflows/Build/badge.svg)](https://github.com/GreyNoise-Intelligence/greynoise-maltego/actions?query=workflow%3ABuild)
 [![main](https://github.com/GreyNoise-Intelligence/greynoise-maltego/workflows/python_linters/badge.svg)](https://github.com/GreyNoise-Intelligence/greynoise-maltego/actions?query=workflow%3Apython_linters)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -29,6 +28,12 @@ If you don't have a GreyNoise API key, you can sign up for a free trial at
    ``commandline`` and ``working directory`` settings to match that of your local setup
 6. Update the ``api_key`` in the ``transforms/GreyNoiseCommunityIPLookup.py`` file
 
+# Values for creating a Manual Transform Seed
+
+`ID`: `GreyNoise Community`
+`Name`: `GreyNoise Community`
+`Seed URL`: `https://cetas.paterva.com/runner/showseed/greynoisecommunity`
+`Icon URL`: `https://viz.greynoise.io/favicon.ico`
 
 ## Contributing
 

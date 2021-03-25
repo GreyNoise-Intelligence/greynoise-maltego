@@ -11,7 +11,6 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
             api_key=api_key,
             integration_name="maltego-community-v1.0.0",
             offering="community",
-            api_server="https://api.dev.greynoise.io",
         )
         try:
             resp = api_client.ip(request.Value)
