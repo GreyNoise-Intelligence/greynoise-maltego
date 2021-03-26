@@ -49,7 +49,7 @@ the [tags on this repository](https://github.com/GreyNoise-Intelligence/greynois
 
 * **Brad Chiappetta** - *Initial work* - [bradchiappetta](https://github.com/bradchiappetta)
 
-See also the list of [contributors](https://github.com/GreyNoise-Intelligence/os-greynoise-maltego/contributors) who participated
+See also the list of [contributors](https://github.com/GreyNoise-Intelligence/greynoise-maltego/contributors) who participated
 in this project.
 
 ## Acknowledgments
@@ -61,6 +61,7 @@ in this project.
 * [GreyNoise.io](https://greynoise.io)
 * [GreyNoise Terms](https://greynoise.io/terms)
 * [GreyNoise Developer Portal](https://developer.greynoise.io)
+* [GreyNoise Community API Reference](https://developer.greynoise.io/reference/community-api#get_v3-community-ip)
 
 ## Contact Us
 
