@@ -14,12 +14,12 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link):
     )
     colour = None
     if classification == "benign":
-        colour = "green"
+        colour = "#45e06f"
     elif classification == "malicious":
-        colour = "red"
+        colour = "#eb4d4b"
 
     if colour:
-        ip_ent.addProperty(fieldName="gn_color", displayName="GreyNoise color", value=color, matchingRule="loose")
+        ip_ent.addProperty(fieldName="gn_color", displayName="GreyNoise color", value=colour, matchingRule="loose")
         ip_ent.addOverlay(propertyName="gn_color", position=OverlayPosition.NORTH_WEST, overlayType=OverlayType.COLOUR)
 
 
@@ -39,7 +39,7 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 if resp["noise"]:
                     response.addEntity("greynoise.noise", "Noise Detected")
                 if resp["riot"]:
-                    response.addEntity("greynoise.riot", "Benign Service Detected")
+                    response.addEntity("greynoise.noise", "Benign Service Detected")
                 response.addEntity("maltego.Alias", resp["name"])
                 response.addEntity("greynoise.classification", resp["classification"])
                 response.addEntity("maltego.DateTime", resp["last_seen"])
