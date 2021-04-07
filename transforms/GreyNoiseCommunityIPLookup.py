@@ -1,6 +1,7 @@
 from greynoise import GreyNoise
 from maltego_trx.overlays import OverlayPosition, OverlayType
-from maltego_trx.maltego import MaltegoEntity
+from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
+
 from maltego_trx.transform import DiscoverableTransform
 
 
@@ -45,14 +46,24 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
 
 class GreyNoiseCommunityIPLookup(DiscoverableTransform):
     @classmethod
-    def create_entities(cls, request, response):
+    def create_entities(cls, request: MaltegoMsg, response):
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
             integration_name="maltego-community-v1.0.0",
             offering="community",
         )
-        input_ip = response.addEntity("maltego.IPv4Address", request.Value)
+
+        # make a precise copy of the input to avoid creating a new graph entity
+        type_name = "maltego.IPv4Address"
+        extra_props = {}
+        if request.Genealogy:
+            type_name = request.Genealogy[0]["Name"]
+            extra_props = request.Properties
+        input_ip = response.addEntity(type_name, request.Value)
+        for k, v in extra_props.items():
+            input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
+
         try:
             resp = api_client.ip(request.Value)
             if resp["noise"] or resp["riot"]:
@@ -60,21 +71,24 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                     response.addEntity("greynoise.noise", "Noise Detected")
                 if resp["riot"]:
                     response.addEntity("greynoise.noise", "Benign Service Detected")
-                response.addEntity("maltego.Alias", resp["name"])
+
+                if resp["name"] != "unknown":
+                    response.addEntity("maltego.Organization", resp["name"])
+
                 response.addEntity("greynoise.classification", resp["classification"])
-                response.addEntity("maltego.DateTime", resp["last_seen"])
-                url = response.addEntity("maltego.URL", resp["link"])
-                url.addProperty(
-                    fieldName="short-title",
-                    displayName="GreyNoise color",
+
+                # add dynamic properties instead of returning more to the graph
+                input_ip.addProperty(
+                    fieldName="gn_url",
+                    displayName="GreyNoise URL",
                     value=resp["link"],
-                    matchingRule="strict",
+                    matchingRule="loose",
                 )
-                url.addProperty(
-                    fieldName="url",
-                    displayName="GreyNoise color",
-                    value=resp["link"],
-                    matchingRule="strict",
+                input_ip.addProperty(
+                    fieldName="gn_last_seen",
+                    displayName="GreyNoise last seen",
+                    value=resp["last_seen"],
+                    matchingRule="loose",
                 )
             else:
                 response.addEntity("greynoise.noise", "No Noise Detected")
