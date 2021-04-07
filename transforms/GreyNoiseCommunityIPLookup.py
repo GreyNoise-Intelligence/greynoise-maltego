@@ -5,8 +5,13 @@ from maltego_trx.transform import DiscoverableTransform
 
 
 def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
-    link_text = "" if not link else f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
-    classification_text = "" if not classification else f"GreyNoise classification for IP: {classification}<br/>"
+    link_text = ""
+    if link:
+        link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
+
+    classification_text = ""
+    if classification:
+        classification_text = f"GreyNoise classification for IP: {classification}<br/>"
 
     name_text = ""
     if name and name != "unknown":
@@ -16,7 +21,7 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
 
     ip_ent.addDisplayInformation(
         f"{link_text}{classification_text}{name_text}{last_seen_text}",
-        "GreyNoise Community"
+        "GreyNoise Community",
     )
     colour = None
     if classification == "benign":
@@ -25,8 +30,17 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
         colour = "#eb4d4b"
 
     if colour:
-        ip_ent.addProperty(fieldName="gn_color", displayName="GreyNoise color", value=colour, matchingRule="loose")
-        ip_ent.addOverlay(propertyName="gn_color", position=OverlayPosition.NORTH_WEST, overlayType=OverlayType.COLOUR)
+        ip_ent.addProperty(
+            fieldName="gn_color",
+            displayName="GreyNoise color",
+            value=colour,
+            matchingRule="loose",
+        )
+        ip_ent.addOverlay(
+            propertyName="gn_color",
+            position=OverlayPosition.NORTH_WEST,
+            overlayType=OverlayType.COLOUR,
+        )
 
 
 class GreyNoiseCommunityIPLookup(DiscoverableTransform):
@@ -51,17 +65,29 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 response.addEntity("maltego.DateTime", resp["last_seen"])
                 url = response.addEntity("maltego.URL", resp["link"])
                 url.addProperty(
-                    fieldName="short-title", displayName="GreyNoise color", value=resp["link"], matchingRule="strict"
+                    fieldName="short-title",
+                    displayName="GreyNoise color",
+                    value=resp["link"],
+                    matchingRule="strict",
                 )
                 url.addProperty(
-                    fieldName="url", displayName="GreyNoise color", value=resp["link"], matchingRule="strict"
+                    fieldName="url",
+                    displayName="GreyNoise color",
+                    value=resp["link"],
+                    matchingRule="strict",
                 )
             else:
                 response.addEntity("greynoise.noise", "No Noise Detected")
-                response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")
+                response.addUIMessage(
+                    f"The IP address {request.Value} hasn't been seen by GreyNoise."
+                )
 
             add_display_info(
-                input_ip, resp.get("classification"), resp.get("last_seen"), resp.get("link"), resp.get("name")
+                input_ip,
+                resp.get("classification"),
+                resp.get("last_seen"),
+                resp.get("link"),
+                resp.get("name"),
             )
         except Exception as e:
             response.addUIMessage(e)
