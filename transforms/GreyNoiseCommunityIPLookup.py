@@ -4,12 +4,18 @@ from maltego_trx.maltego import MaltegoEntity
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link):
+def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
     link_text = "" if not link else f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
     classification_text = "" if not classification else f"GreyNoise classification for IP: {classification}<br/>"
+
+    name_text = ""
+    if name and name != "unknown":
+        name_text = f"GreyNoise attribution: {name}<br/>"
+
     last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}"
+
     ip_ent.addDisplayInformation(
-        f"{link_text}{classification_text}{last_seen_text}",
+        f"{link_text}{classification_text}{name_text}{last_seen_text}",
         "GreyNoise Community"
     )
     colour = None
@@ -54,6 +60,8 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 response.addEntity("greynoise.noise", "No Noise Detected")
                 response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")
 
-            add_display_info(input_ip, resp.get("classification"), resp.get("last_seen"), resp.get("link"))
+            add_display_info(
+                input_ip, resp.get("classification"), resp.get("last_seen"), resp.get("link"), resp.get("name")
+            )
         except Exception as e:
             response.addUIMessage(e)
