@@ -5,7 +5,7 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
+def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name, tags):
     link_text = ""
     if link:
         link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
@@ -20,8 +20,14 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
 
     last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}"
 
+    tag_text = ""
+    if tags:
+        tags_list=",".join(tags)
+        tag_text = f"GreyNoise Tags: {tags_list}"
+
+
     ip_ent.addDisplayInformation(
-        f"{link_text}{classification_text}{name_text}{last_seen_text}",
+        f"{link_text}{classification_text}{name_text}{last_seen_text}{tag_text}",
         "GreyNoise",
     )
     colour = None
@@ -73,6 +79,18 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
 
                 response.addEntity("greynoise.classification", resp["classification"])
 
+                if resp["vpn"]:
+                    respon.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
+
+                if resp["bot"]:
+                    respon.addEntity("maltego.Service", "Common Bot Activity")
+
+                if resp["metadata"]["tor"]:
+                    respon.addEntity("maltego.Service", "Tor Exit Node")
+
+                for cve in resp["cve"]:
+                    respon.addEntity("maltego.CVE", cve)
+
                 resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(
@@ -99,6 +117,7 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 resp.get("last_seen"),
                 resp.get("link"),
                 resp.get("actor"),
+                resp.get("tags")
             )
         except Exception as e:
             response.addUIMessage(e)

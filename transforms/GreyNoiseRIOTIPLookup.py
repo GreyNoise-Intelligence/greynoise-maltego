@@ -89,9 +89,9 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
                     matchingRule="loose",
                 )
             else:
-                response.addEntity("greynoise.noise", "No Noise Detected")
+                response.addEntity("greynoise.noise", "Not a Common Business Service")
                 response.addUIMessage(
-                    f"The IP address {request.Value} hasn't been seen by GreyNoise."
+                    f"The IP address {request.Value} is not found in GreyNoise RIOT IP Dataset."
                 )
 
             add_display_info(
