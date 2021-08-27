@@ -18,10 +18,10 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_updated, link, 
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_updated_text = "" if not last_updated else f"Last updated by GreyNoise: {last_seen}"
+    last_updated_text = "" if not last_updated else f"Last updated by GreyNoise: {last_updated}"
 
     ip_ent.addDisplayInformation(
-        f"{link_text}{classification_text}{name_text}{last_seen_text}",
+        f"{link_text}{classification_text}{name_text}{last_updated_text}",
         "GreyNoise",
     )
     colour = None
@@ -85,8 +85,8 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
                     matchingRule="loose",
                 )
                 input_ip.addProperty(
-                    fieldName="gn_last_seen",
-                    displayName="GreyNoise last seen",
+                    fieldName="gn_last_updated",
+                    displayName="GreyNoise last updated",
                     value=resp["last_updated"],
                     matchingRule="loose",
                 )
