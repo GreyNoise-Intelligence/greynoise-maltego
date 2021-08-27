@@ -18,7 +18,7 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}"
+    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}<br/>"
 
     tag_text = ""
     if tags:
@@ -80,16 +80,16 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 response.addEntity("greynoise.classification", resp["classification"])
 
                 if resp["vpn"]:
-                    respon.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
+                    response.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
 
                 if resp["bot"]:
-                    respon.addEntity("maltego.Service", "Common Bot Activity")
+                    response.addEntity("maltego.Service", "Common Bot Activity")
 
                 if resp["metadata"]["tor"]:
-                    respon.addEntity("maltego.Service", "Tor Exit Node")
+                    response.addEntity("maltego.Service", "Tor Exit Node")
 
                 for cve in resp["cve"]:
-                    respon.addEntity("maltego.CVE", cve)
+                    response.addEntity("maltego.CVE", cve)
 
                 resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
                 # add dynamic properties instead of returning more to the graph
