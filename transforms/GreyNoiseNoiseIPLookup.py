@@ -22,7 +22,7 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
 
     ip_ent.addDisplayInformation(
         f"{link_text}{classification_text}{name_text}{last_seen_text}",
-        "GreyNoise Community",
+        "GreyNoise",
     )
     colour = None
     if classification == "benign":
@@ -44,14 +44,13 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
         )
 
 
-class GreyNoiseCommunityIPLookup(DiscoverableTransform):
+class GreyNoiseNoiseIPLookup(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
-            integration_name="maltego-community-v2.0.0",
-            offering="community",
+            integration_name="maltego-integration-v2.0.0",
         )
 
         # make a precise copy of the input to avoid creating a new graph entity
@@ -66,17 +65,15 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
 
         try:
             resp = api_client.ip(request.Value)
-            if resp["noise"] or resp["riot"]:
-                if resp["noise"]:
-                    response.addEntity("greynoise.noise", "Noise Detected")
-                if resp["riot"]:
-                    response.addEntity("greynoise.noise", "Common Business Detected")
+            if resp["seen"]:
+                response.addEntity("greynoise.noise", "Noise Detected")
 
-                if resp["name"] != "unknown":
-                    response.addEntity("maltego.Organization", resp["name"])
+                if resp["actor"] != "unknown":
+                    response.addEntity("maltego.Organization", resp["actor"])
 
                 response.addEntity("greynoise.classification", resp["classification"])
 
+                resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(
                     fieldName="gn_url",
@@ -101,7 +98,7 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 resp.get("classification"),
                 resp.get("last_seen"),
                 resp.get("link"),
-                resp.get("name"),
+                resp.get("actor"),
             )
         except Exception as e:
             response.addUIMessage(e)
