@@ -5,7 +5,7 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
+def add_display_info(ip_ent: MaltegoEntity, classification, last_updated, link, name):
     link_text = ""
     if link:
         link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
@@ -18,7 +18,7 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}"
+    last_updated_text = "" if not last_updated else f"Last updated by GreyNoise: {last_seen}"
 
     ip_ent.addDisplayInformation(
         f"{link_text}{classification_text}{name_text}{last_seen_text}",
@@ -66,7 +66,9 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
         try:
             resp = api_client.riot(request.Value)
             if resp["riot"]:
-                response.addEntity("greynoise.noise", "Common Business Service Detected")
+                response.addEntity(
+                    "greynoise.noise", "Common Business Service Detected"
+                )
 
                 if resp["name"] != "unknown":
                     response.addEntity("maltego.Organization", resp["name"])
@@ -85,7 +87,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
                 input_ip.addProperty(
                     fieldName="gn_last_seen",
                     displayName="GreyNoise last seen",
-                    value=resp["last_seen"],
+                    value=resp["last_updated"],
                     matchingRule="loose",
                 )
             else:
@@ -97,7 +99,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
             add_display_info(
                 input_ip,
                 resp.get("classification"),
-                resp.get("last_seen"),
+                resp.get("last_updated"),
                 resp.get("link"),
                 resp.get("name"),
             )

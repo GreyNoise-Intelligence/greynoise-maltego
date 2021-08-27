@@ -5,7 +5,9 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name, tags):
+def add_display_info(
+    ip_ent: MaltegoEntity, classification, last_seen, link, name, tags
+):
     link_text = ""
     if link:
         link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
@@ -18,13 +20,14 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}<br/>"
+    last_seen_text = (
+        "" if not last_seen else f"Last seen by GreyNoise: {last_seen}<br/>"
+    )
 
     tag_text = ""
     if tags:
-        tags_list=",".join(tags)
+        tags_list = ",".join(tags)
         tag_text = f"GreyNoise Tags: {tags_list}"
-
 
     ip_ent.addDisplayInformation(
         f"{link_text}{classification_text}{name_text}{last_seen_text}{tag_text}",
@@ -80,7 +83,9 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 response.addEntity("greynoise.classification", resp["classification"])
 
                 if resp["vpn"]:
-                    response.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
+                    response.addEntity(
+                        "maltego.Service", "VPN Service: " + resp.get("vpn_service")
+                    )
 
                 if resp["bot"]:
                     response.addEntity("maltego.Service", "Common Bot Activity")
@@ -117,7 +122,7 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 resp.get("last_seen"),
                 resp.get("link"),
                 resp.get("actor"),
-                resp.get("tags")
+                resp.get("tags"),
             )
         except Exception as e:
             response.addUIMessage(e)
