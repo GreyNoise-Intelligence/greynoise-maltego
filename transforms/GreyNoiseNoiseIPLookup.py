@@ -1,4 +1,5 @@
 from greynoise import GreyNoise
+from maltego_trx.entities import ASNumber, Person, Location
 from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 
@@ -26,7 +27,7 @@ def add_display_info(
 
     tag_text = ""
     if tags:
-        tags_list = ",".join(tags)
+        tags_list = ", ".join(tags)
         tag_text = f"GreyNoise Tags: {tags_list}"
 
     ip_ent.addDisplayInformation(
@@ -78,14 +79,16 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 response.addEntity("greynoise.noise", "Noise Detected")
 
                 if resp["actor"] != "unknown":
-                    response.addEntity("maltego.Organization", resp["actor"])
+                    response.addEntity(Person, resp["actor"])
 
                 response.addEntity("greynoise.classification", resp["classification"])
 
+                response.addEntity(ASNumber, str(resp['metadata']['asn']).replace('AS', ''))
+                response.addEntity('maltego.Company', resp['metadata']['organization'])
+                response.addEntity(Location, '{0},{1}'.format(resp['metadata']['city'], resp['metadata']['country']))
+
                 if resp["vpn"]:
-                    response.addEntity(
-                        "maltego.Service", "VPN Service: " + resp.get("vpn_service")
-                    )
+                    response.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
 
                 if resp["bot"]:
                     response.addEntity("maltego.Service", "Common Bot Activity")
