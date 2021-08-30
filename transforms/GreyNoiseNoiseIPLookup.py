@@ -6,9 +6,7 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(
-    ip_ent: MaltegoEntity, classification, last_seen, link, name, tags
-):
+def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name, tags):
     link_text = ""
     if link:
         link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
@@ -21,9 +19,7 @@ def add_display_info(
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_seen_text = (
-        "" if not last_seen else f"Last seen by GreyNoise: {last_seen}<br/>"
-    )
+    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}<br/>"
 
     tag_text = ""
     if tags:
@@ -56,7 +52,7 @@ def add_display_info(
 
 class GreyNoiseNoiseIPLookup(DiscoverableTransform):
     @classmethod
-    def create_entities(cls, request: MaltegoMsg, response):
+    def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
@@ -81,11 +77,19 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 if resp["actor"] != "unknown":
                     response.addEntity(Person, resp["actor"])
 
-                response.addEntity("greynoise.classification", resp["classification"])
+                if resp["classification"]:
+                    response.addEntity("greynoise.classification", resp["classification"])
 
-                response.addEntity(ASNumber, str(resp['metadata']['asn']).replace('AS', ''))
-                response.addEntity('maltego.Company', resp['metadata']['organization'])
-                response.addEntity(Location, '{0},{1}'.format(resp['metadata']['city'], resp['metadata']['country']))
+                if resp["metadata"]["asn"]:
+                    response.addEntity(ASNumber, str(resp["metadata"]["asn"]).replace("AS", ""))
+
+                if resp["metadata"]["organization"]:
+                    response.addEntity("maltego.Company", resp["metadata"]["organization"])
+
+                if resp["metadata"]["organization"] and resp["metadata"]["country"]:
+                    response.addEntity(
+                        Location, "{0},{1}".format(resp["metadata"]["organization"], resp["metadata"]["country"])
+                    )
 
                 if resp["vpn"]:
                     response.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
@@ -115,9 +119,7 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 )
             else:
                 response.addEntity("greynoise.noise", "No Noise Detected")
-                response.addUIMessage(
-                    f"The IP address {request.Value} hasn't been seen by GreyNoise."
-                )
+                response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")
 
             add_display_info(
                 input_ip,

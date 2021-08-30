@@ -92,9 +92,7 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                 )
             else:
                 response.addEntity("greynoise.noise", "No Noise Detected")
-                response.addUIMessage(
-                    f"The IP address {request.Value} hasn't been seen by GreyNoise."
-                )
+                response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")
 
             add_display_info(
                 input_ip,

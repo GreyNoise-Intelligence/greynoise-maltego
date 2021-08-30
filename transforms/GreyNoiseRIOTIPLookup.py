@@ -66,9 +66,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
         try:
             resp = api_client.riot(request.Value)
             if resp["riot"]:
-                response.addEntity(
-                    "greynoise.noise", "Common Business Service Detected"
-                )
+                response.addEntity("greynoise.noise", "Common Business Service Detected")
 
                 if resp["name"] != "unknown":
                     response.addEntity("maltego.Organization", resp["name"])
@@ -92,9 +90,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
                 )
             else:
                 response.addEntity("greynoise.noise", "Not a Common Business Service")
-                response.addUIMessage(
-                    f"The IP address {request.Value} is not found in GreyNoise RIOT IP Dataset."
-                )
+                response.addUIMessage(f"The IP address {request.Value} is not found in GreyNoise RIOT IP Dataset.")
 
             add_display_info(
                 input_ip,
