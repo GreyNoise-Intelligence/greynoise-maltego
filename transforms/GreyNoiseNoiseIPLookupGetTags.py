@@ -1,7 +1,5 @@
 from greynoise import GreyNoise
-from maltego_trx.entities import ASNumber, Person, Location
-from maltego_trx.overlays import OverlayPosition, OverlayType
-from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
+from maltego_trx.maltego import MaltegoMsg
 
 from maltego_trx.transform import DiscoverableTransform
 
@@ -32,8 +30,7 @@ class GreyNoiseNoiseIPLookupGetTags(DiscoverableTransform):
                     for tag in resp["tags"]:
                         response.addEntity("maltego.Phrase", tag)
                 else:
-                    response.addUIMessage(
-                        f"The IP address {request.Value} has no associated Tags.")
+                    response.addUIMessage(f"The IP address {request.Value} has no associated Tags.")
 
             else:
                 response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")

@@ -1,8 +1,7 @@
 from greynoise import GreyNoise
 from maltego_trx.entities import ASNumber, Person, Location
-from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
-
+from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.transform import DiscoverableTransform
 
 
@@ -88,7 +87,10 @@ class GreyNoiseNoiseIPLookupAllDetails(DiscoverableTransform):
 
                 if resp["metadata"]["city"] and resp["metadata"]["country"] and resp["metadata"]["country_code"]:
                     response.addEntity(
-                        Location, "{0}, {1} ({2})".format(resp["metadata"]["city"], resp["metadata"]["country"], resp["metadata"]["country_code"])
+                        Location,
+                        "{0}, {1} ({2})".format(
+                            resp["metadata"]["city"], resp["metadata"]["country"], resp["metadata"]["country_code"]
+                        ),
                     )
 
                 if resp["vpn"]:
