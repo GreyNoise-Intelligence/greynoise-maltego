@@ -50,7 +50,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
-            integration_name="maltego-community-v2.0.0",
+            integration_name="maltego-integration-v2.0.0",
         )
 
         # make a precise copy of the input to avoid creating a new graph entity
@@ -73,7 +73,7 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
 
                 response.addEntity("greynoise.classification", "RIOT")
 
-                resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
+                resp["link"] = "https://www.greynoise.io/viz/riot/" + resp["ip"]
 
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(

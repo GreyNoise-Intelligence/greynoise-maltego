@@ -50,7 +50,7 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
         )
 
 
-class GreyNoiseNoiseIPLookup(DiscoverableTransform):
+class GreyNoiseNoiseIPLookupAllDetails(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
@@ -86,9 +86,9 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                 if resp["metadata"]["organization"]:
                     response.addEntity("maltego.Company", resp["metadata"]["organization"])
 
-                if resp["metadata"]["organization"] and resp["metadata"]["country"]:
+                if resp["metadata"]["city"] and resp["metadata"]["country"] and resp["metadata"]["country_code"]:
                     response.addEntity(
-                        Location, "{0},{1}".format(resp["metadata"]["organization"], resp["metadata"]["country"])
+                        Location, "{0}, {1} ({2})".format(resp["metadata"]["city"], resp["metadata"]["country"], resp["metadata"]["country_code"])
                     )
 
                 if resp["vpn"]:
@@ -101,7 +101,15 @@ class GreyNoiseNoiseIPLookup(DiscoverableTransform):
                     response.addEntity("maltego.Service", "Tor Exit Node")
 
                 for cve in resp["cve"]:
-                    response.addEntity("maltego.CVE", cve)
+                    cve_entity = response.addEntity("maltego.CVE", cve)
+                    cve_entity.setLinkLabel("Probes For")
+
+                for item in resp["raw_data"]["scan"]:
+                    port_entity = response.addEntity("maltego.Port", item["port"])
+                    port_entity.setLinkLabel("Scans For")
+
+                for tag in resp["tags"]:
+                    response.addEntity("maltego.Phrase", tag)
 
                 resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
                 # add dynamic properties instead of returning more to the graph
