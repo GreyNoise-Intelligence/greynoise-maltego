@@ -28,7 +28,7 @@ class GreyNoiseNoiseIPLookupGetTags(DiscoverableTransform):
         try:
             resp = api_client.ip(request.Value)
             if resp["seen"]:
-                if resp["cve"]:
+                if resp["tags"]:
                     for tag in resp["tags"]:
                         response.addEntity("maltego.Phrase", tag)
                 else:
