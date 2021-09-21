@@ -1,11 +1,12 @@
 import datetime
+import re
 
 from greynoise import GreyNoise
 from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-class GreyNoiseQueryByTag(DiscoverableTransform):
+class GreyNoiseQueryByCVE(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
@@ -39,21 +40,26 @@ class GreyNoiseQueryByTag(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            query_string = "tags:" + request.Value + " last_seen:[" + modified_from_time + " TO "\
-                           + modified_to_time + "]"
-            if asn:
-                query_string = query_string + " asn:AS" + asn
-            if actor:
-                query_string = query_string + " actor:'" + actor + "'"
-            if port and port != "0":
-                query_string = query_string + " raw_data.scan.port:" + port
-            resp = api_client.query(query_string)
-            if resp["count"] > 1:
-                for ip_details in resp["data"]:
-                    response.addEntity("maltego.IPv4Address", ip_details["ip"])
+            cve_pattern = "CVE-\d{4}-\d{4,7}"
+            match = re.match(cve_pattern, request.Value)
+            if match:
+                query_string = "cve:" + request.Value + " last_seen:[" + modified_from_time + " TO "\
+                               + modified_to_time + "]"
+                if asn:
+                    query_string = query_string + " asn:AS" + asn
+                if actor:
+                    query_string = query_string + " actor:'" + actor + "'"
+                if port and port != "0":
+                    query_string = query_string + " raw_data.scan.port:" + port
+                resp = api_client.query(query_string)
+                if resp["count"] > 1:
+                    for ip_details in resp["data"]:
+                        response.addEntity("maltego.IPv4Address", ip_details["ip"])
 
+                else:
+                    response.addUIMessage(f"The Query {query_string} did not return any results.")
             else:
-                response.addUIMessage(f"The Query {query_string} did not return any results.")
+                response.addEntity(f"{request.Value} is not a properly formatted CVE.")
 
         except Exception as e:
             response.addUIMessage(e)
