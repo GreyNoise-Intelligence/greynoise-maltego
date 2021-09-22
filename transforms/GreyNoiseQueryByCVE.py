@@ -18,11 +18,11 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
             from_time = int(query_range.split("-")[0].split(".")[0])
             to_time = int(query_range.split("-")[1].split(".")[0])
 
-            modified_from_time = datetime.datetime.fromtimestamp(from_time).strftime('%Y-%m-%d')
-            modified_to_time = datetime.datetime.fromtimestamp(to_time).strftime('%Y-%m-%d')
+            modified_from_time = datetime.datetime.fromtimestamp(from_time).strftime("%Y-%m-%d")
+            modified_to_time = datetime.datetime.fromtimestamp(to_time).strftime("%Y-%m-%d")
         except ValueError:
-            modified_from_time = datetime.datetime.now().strftime('%Y-%m-%d')
-            modified_to_time = datetime.datetime.now().strftime('%Y-%m-%d')
+            modified_from_time = datetime.datetime.now().strftime("%Y-%m-%d")
+            modified_to_time = datetime.datetime.now().strftime("%Y-%m-%d")
 
         api_client = GreyNoise(
             api_key=api_key,
@@ -40,11 +40,12 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            cve_pattern = "CVE-\d{4}-\d{4,7}"
+            cve_pattern = "CVE-\d{4}-\d{4,7}"  # noqa: C605
             match = re.match(cve_pattern, request.Value)
             if match:
-                query_string = "cve:" + request.Value + " last_seen:[" + modified_from_time + " TO "\
-                               + modified_to_time + "]"
+                query_string = (
+                    "cve:" + request.Value + " last_seen:[" + modified_from_time + " TO " + modified_to_time + "]"
+                )
                 if asn:
                     query_string = query_string + " asn:AS" + asn
                 if actor:

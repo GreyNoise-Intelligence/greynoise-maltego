@@ -17,11 +17,11 @@ class GreyNoiseQueryByTag(DiscoverableTransform):
             from_time = int(query_range.split("-")[0].split(".")[0])
             to_time = int(query_range.split("-")[1].split(".")[0])
 
-            modified_from_time = datetime.datetime.fromtimestamp(from_time).strftime('%Y-%m-%d')
-            modified_to_time = datetime.datetime.fromtimestamp(to_time).strftime('%Y-%m-%d')
+            modified_from_time = datetime.datetime.fromtimestamp(from_time).strftime("%Y-%m-%d")
+            modified_to_time = datetime.datetime.fromtimestamp(to_time).strftime("%Y-%m-%d")
         except ValueError:
-            modified_from_time = datetime.datetime.now().strftime('%Y-%m-%d')
-            modified_to_time = datetime.datetime.now().strftime('%Y-%m-%d')
+            modified_from_time = datetime.datetime.now().strftime("%Y-%m-%d")
+            modified_to_time = datetime.datetime.now().strftime("%Y-%m-%d")
 
         api_client = GreyNoise(
             api_key=api_key,
@@ -39,8 +39,9 @@ class GreyNoiseQueryByTag(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            query_string = "tags:" + request.Value + " last_seen:[" + modified_from_time + " TO "\
-                           + modified_to_time + "]"
+            query_string = (
+                "tags:" + request.Value + " last_seen:[" + modified_from_time + " TO " + modified_to_time + "]"
+            )
             if asn:
                 query_string = query_string + " asn:AS" + asn
             if actor:
