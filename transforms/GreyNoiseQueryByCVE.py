@@ -60,7 +60,7 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
                 else:
                     response.addUIMessage(f"The Query {query_string} did not return any results.")
             else:
-                response.addEntity(f"{request.Value} is not a properly formatted CVE.")
+                response.addUIMessage(f"{request.Value} is not a properly formatted CVE.")
 
         except Exception as e:
             response.addUIMessage(e)
