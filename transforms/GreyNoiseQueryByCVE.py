@@ -30,7 +30,7 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
         )
 
         # make a precise copy of the input to avoid creating a new graph entity
-        type_name = "maltego.Phrase"
+        type_name = "maltego.CVE"
         extra_props = {}
         if request.Genealogy:
             type_name = request.Genealogy[0]["Name"]
