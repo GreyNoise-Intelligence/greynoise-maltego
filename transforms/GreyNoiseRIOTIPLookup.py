@@ -71,7 +71,12 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
                 if resp["name"] != "unknown":
                     response.addEntity("maltego.Organization", resp["name"])
 
-                response.addEntity("greynoise.classification", "RIOT")
+                if resp["trust_level"] == "1":
+                    response.addEntity("greynoise.classification", "RIOT - Reasonably Ignore")
+                elif resp["trust_level"] == "2":
+                    response.addEntity("greynoise.classification", "RIOT - Commonly Seen")
+                else:
+                    response.addEntity("greynoise.classification", "RIOT")
 
                 resp["link"] = "https://www.greynoise.io/viz/riot/" + resp["ip"]
 
