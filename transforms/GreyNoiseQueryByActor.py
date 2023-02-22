@@ -2,7 +2,6 @@ import datetime
 
 from greynoise import GreyNoise
 from maltego_trx.maltego import MaltegoMsg
-
 from maltego_trx.transform import DiscoverableTransform
 
 

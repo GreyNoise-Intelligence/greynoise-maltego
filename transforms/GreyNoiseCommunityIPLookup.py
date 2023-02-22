@@ -1,7 +1,6 @@
 from greynoise import GreyNoise
-from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
-
+from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.transform import DiscoverableTransform
 
 

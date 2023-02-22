@@ -1,16 +1,15 @@
-import utility
-
 from greynoise import GreyNoise
-from maltego_trx.entities import ASNumber, Person, Location
-from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
-from maltego_trx.overlays import OverlayPosition, OverlayType
+from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
+from .utility import INTEGRATION_NAME
 
 
 class GreyNoiseNoiseIPSims(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
+        limit = request.TransformSettings["limit"]
+        minimum_score = request.TransformSettings["minimum_score"]
         api_client = GreyNoise(
             api_key=api_key,
             integration_name=INTEGRATION_NAME
@@ -26,9 +25,15 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
         for k, v in extra_props.items():
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
+        if not limit:
+            limit = 50
+
+        if not minimum_score:
+            minimum_score = 90
+
         try:
-            resp = api_client.similar(request.Value)
-            if resp["similar_ips"]:
+            resp = api_client.similar(request.Value, min_score=minimum_score, limit=limit)
+            if "similar_ips" in resp:
                 for item in resp["similar_ips"]:
                     response.addEntity("maltego.IPv4Address", item["ip"])
 
