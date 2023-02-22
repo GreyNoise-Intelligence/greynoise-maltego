@@ -1,9 +1,9 @@
 [![main](https://github.com/GreyNoise-Intelligence/greynoise-maltego/workflows/python_linters/badge.svg)](https://github.com/GreyNoise-Intelligence/greynoise-maltego/actions?query=workflow%3Apython_linters)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# GreyNoise Maltego Transform for Community API
+# GreyNoise Maltego Transforms
 
-This repo includes a transform for Maltego to query the GreyNoise Community API.
+This repo includes a transforms for Maltego to query the GreyNoise APIs.
 
 More details about Maltego here: [https://www.maltego.com/](https://www.maltego.com/)
 
@@ -28,12 +28,21 @@ If you don't have a GreyNoise API key, you can sign up for a free trial at
    ``commandline`` and ``working directory`` settings to match that of your local setup
 6. Update the ``api_key`` in the ``transforms/GreyNoiseCommunityIPLookup.py`` file
 
-# Values for creating a Manual Transform Seed
+Repeat steps 5 & 6 for additional transforms
 
-`ID`: `GreyNoise Community`
-`Name`: `GreyNoise Community`
-`Seed URL`: `https://cetas.paterva.com/runner/showseed/greynoisecommunity`
-`Icon URL`: `https://viz.greynoise.io/favicon.ico`
+# Values for creating a Manual Transform Seed for Community API
+
+ - `ID`: `GreyNoise Community`
+ - `Name`: `GreyNoise Community`
+ - `Seed URL`: `https://cetas.paterva.com/runner/showseed/greynoisecommunity`
+ - `Icon URL`: `https://viz.greynoise.io/favicon.ico`
+
+# Values for creating a Manual Transform Seed for Enterprise API
+
+ - `ID`: `GreyNoise`
+ - `Name`: `GreyNoise`
+ - `Seed URL`: `https://cetas.paterva.com/runner/showseed/greynoiseenterprise`
+ - `Icon URL`: `https://viz.greynoise.io/favicon.ico`
 
 ## Contributing
 

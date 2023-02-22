@@ -5,7 +5,7 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
 
-def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
+def add_display_info(ip_ent: MaltegoEntity, classification, last_updated, link, name):
     link_text = ""
     if link:
         link_text = f'<h3><a href="{link}">Open in GreyNoise</a></h3> <br/>'
@@ -18,11 +18,11 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
     if name and name != "unknown":
         name_text = f"GreyNoise attribution: {name}<br/>"
 
-    last_seen_text = "" if not last_seen else f"Last seen by GreyNoise: {last_seen}"
+    last_updated_text = "" if not last_updated else f"Last updated by GreyNoise: {last_updated}"
 
     ip_ent.addDisplayInformation(
-        f"{link_text}{classification_text}{name_text}{last_seen_text}",
-        "GreyNoise Community",
+        f"{link_text}{classification_text}{name_text}{last_updated_text}",
+        "GreyNoise",
     )
     colour = None
     if classification == "benign":
@@ -44,14 +44,13 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
         )
 
 
-class GreyNoiseCommunityIPLookup(DiscoverableTransform):
+class GreyNoiseRIOTIPLookup(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
-            integration_name="maltego-community-v2.0.0",
-            offering="community",
+            integration_name="maltego-integration-v2.0.0",
         )
 
         # make a precise copy of the input to avoid creating a new graph entity
@@ -65,17 +64,21 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            resp = api_client.ip(request.Value)
-            if resp["noise"] or resp["riot"]:
-                if resp["noise"]:
-                    response.addEntity("greynoise.noise", "Noise Detected")
-                if resp["riot"]:
-                    response.addEntity("greynoise.noise", "Common Business Detected")
+            resp = api_client.riot(request.Value)
+            if resp["riot"]:
+                response.addEntity("greynoise.noise", "Common Business Service Detected")
 
                 if resp["name"] != "unknown":
                     response.addEntity("maltego.Organization", resp["name"])
 
-                response.addEntity("greynoise.classification", resp["classification"])
+                if resp["trust_level"] == "1":
+                    response.addEntity("greynoise.classification", "RIOT - Reasonably Ignore")
+                elif resp["trust_level"] == "2":
+                    response.addEntity("greynoise.classification", "RIOT - Commonly Seen")
+                else:
+                    response.addEntity("greynoise.classification", "RIOT")
+
+                resp["link"] = "https://www.greynoise.io/viz/riot/" + resp["ip"]
 
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(
@@ -85,19 +88,19 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
                     matchingRule="loose",
                 )
                 input_ip.addProperty(
-                    fieldName="gn_last_seen",
-                    displayName="GreyNoise last seen",
-                    value=resp["last_seen"],
+                    fieldName="gn_last_updated",
+                    displayName="GreyNoise last updated",
+                    value=resp["last_updated"],
                     matchingRule="loose",
                 )
             else:
-                response.addEntity("greynoise.noise", "No Noise Detected")
-                response.addUIMessage(f"The IP address {request.Value} hasn't been seen by GreyNoise.")
+                response.addEntity("greynoise.noise", "Not a Common Business Service")
+                response.addUIMessage(f"The IP address {request.Value} is not found in GreyNoise RIOT IP Dataset.")
 
             add_display_info(
                 input_ip,
                 resp.get("classification"),
-                resp.get("last_seen"),
+                resp.get("last_updated"),
                 resp.get("link"),
                 resp.get("name"),
             )
