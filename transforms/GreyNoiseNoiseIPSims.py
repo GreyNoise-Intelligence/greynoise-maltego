@@ -27,9 +27,13 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
 
         if not limit:
             limit = 50
+        elif isinstance(limit, str):
+            limit = int(limit)
 
         if not minimum_score:
             minimum_score = 90
+        elif isinstance(minimum_score, str):
+            minimum_score = int(minimum_score)
 
         try:
             resp = api_client.similar(request.Value, min_score=minimum_score, limit=limit)
