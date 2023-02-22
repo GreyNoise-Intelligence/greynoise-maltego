@@ -44,6 +44,13 @@ Repeat steps 5 & 6 for additional transforms
  - `Seed URL`: `https://cetas.paterva.com/runner/showseed/greynoiseenterprise`
  - `Icon URL`: `https://viz.greynoise.io/favicon.ico`
 
+# Values for creating a Manual Transform Seed for Development work
+
+ - `ID`: `GreyNoise Dev`
+ - `Name`: `GreyNoise Dev`
+ - `Seed URL`: `https://cetas.paterva.com/runner/showseed/jFUjpWPnZCliFvcE2DyragzC`
+ - `Icon URL`: `https://viz.greynoise.io/favicon.ico`
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull
@@ -61,20 +68,16 @@ the [tags on this repository](https://github.com/GreyNoise-Intelligence/greynois
 See also the list of [contributors](https://github.com/GreyNoise-Intelligence/greynoise-maltego/contributors) who participated
 in this project.
 
-## Acknowledgments
-
-* Siemplify Community and Support members for help with the initial development.
-
 ## Links
 
 * [GreyNoise.io](https://greynoise.io)
 * [GreyNoise Terms](https://greynoise.io/terms)
-* [GreyNoise Developer Portal](https://developer.greynoise.io)
-* [GreyNoise Community API Reference](https://developer.greynoise.io/reference/community-api#get_v3-community-ip)
+* [GreyNoise Doc Portal](https://doc.greynoise.io)
+* [GreyNoise Community API Reference](https://doc.greynoise.io/reference/community-api#get_v3-community-ip)
 
 ## Contact Us
 
-Have any questions or comments about GreyNoise? Contact us at [hello@greynoise.io](mailto:hello@greynoise.io)
+Have any questions or comments about GreyNoise? Contact us at [integrations@greynoise.io](mailto:integrations@greynoise.io)
 
 ## Copyright and License
 

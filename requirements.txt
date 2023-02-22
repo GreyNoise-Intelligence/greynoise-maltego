@@ -1,4 +1,3 @@
-futures
 gunicorn
 maltego-trx
-greynoise>=0.8.0
+greynoise>=2.0.0
