@@ -3,15 +3,14 @@ from maltego_trx.entities import Person
 from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
+from .utility import INTEGRATION_NAME
+
 
 class GreyNoiseNoiseIPLookupGetActor(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
-        api_client = GreyNoise(
-            api_key=api_key,
-            integration_name="maltego-integration-v2.0.0",
-        )
+        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"

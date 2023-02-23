@@ -3,6 +3,8 @@ from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.transform import DiscoverableTransform
 
+from .utility import COMMUNITY_INTEGRATION_NAME
+
 
 def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, name):
     link_text = ""
@@ -49,7 +51,7 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
         api_key = request.TransformSettings["GNApiKey"]
         api_client = GreyNoise(
             api_key=api_key,
-            integration_name="maltego-community-v2.0.0",
+            integration_name=COMMUNITY_INTEGRATION_NAME,
             offering="community",
         )
 

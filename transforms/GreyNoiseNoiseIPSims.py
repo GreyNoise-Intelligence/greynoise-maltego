@@ -1,6 +1,7 @@
 from greynoise import GreyNoise
 from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
+
 from .utility import INTEGRATION_NAME
 
 
@@ -10,10 +11,7 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
         api_key = request.TransformSettings["GNApiKey"]
         limit = request.TransformSettings["limit"]
         minimum_score = request.TransformSettings["minimum_score"]
-        api_client = GreyNoise(
-            api_key=api_key,
-            integration_name=INTEGRATION_NAME
-        )
+        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"
@@ -42,8 +40,7 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
                     response.addEntity("maltego.IPv4Address", item["ip"])
 
             else:
-                response.addUIMessage(
-                    f"The IP address {request.Value} has no similar IPs within GreyNoise.")
+                response.addUIMessage(f"The IP address {request.Value} has no similar IPs within GreyNoise.")
 
         except Exception as e:
             response.addUIMessage(e)
