@@ -57,7 +57,7 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
                 add_display_info(
                     input_ip,
                     similar_ips,
-                    resp.get("ip"),
+                    resp["ip"].get("ip"),
                 )
 
             else:
