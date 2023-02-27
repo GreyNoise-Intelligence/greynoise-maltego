@@ -11,10 +11,10 @@ def add_display_info(ip_ent: MaltegoEntity, similar_ips, ip_address, minimum_sco
         f"See Similarity results in GreyNoise</a></h3><br/>"
     )
 
-    minimum_score_percentage = str(int(minimum_score) * 100)
+    minimum_score_percentage = str(int(minimum_score))
     similarity_text = (
-        f"IP address {ip_address} is similar to {similar_ips} "
-        f"above a {minimum_score_percentage}% in the GreyNoise data set<br/>"
+        f"{ip_address} is {minimum_score_percentage}% or more similar to "
+        f"{similar_ips} other IP addresses in the GreyNoise.<br/>"
     )
 
     ip_ent.addDisplayInformation(
