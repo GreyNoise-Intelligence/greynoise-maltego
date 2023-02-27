@@ -5,13 +5,17 @@ from maltego_trx.transform import DiscoverableTransform
 from .utility import INTEGRATION_NAME
 
 
-def add_display_info(ip_ent: MaltegoEntity, similar_ips, ip_address):
+def add_display_info(ip_ent: MaltegoEntity, similar_ips, ip_address, minimum_score):
     link_text = (
         f'<h3><a href="https://viz.greynoise.io/ip-similarity/{ip_address}">'
         f"See Similarity results in GreyNoise</a></h3><br/>"
     )
 
-    similarity_text = f"IP address {ip_address} is similar to {similar_ips}" f" in the GreyNoise data set<br/>"
+    minimum_score_percentage = str(int(minimum_score) * 100)
+    similarity_text = (
+        f"IP address {ip_address} is similar to {similar_ips} "
+        f"above a {minimum_score_percentage}% in the GreyNoise data set<br/>"
+    )
 
     ip_ent.addDisplayInformation(
         f"{link_text}{similarity_text}",
@@ -58,6 +62,7 @@ class GreyNoiseNoiseIPSims(DiscoverableTransform):
                     input_ip,
                     similar_ips,
                     resp["ip"].get("ip"),
+                    minimum_score,
                 )
 
             else:
