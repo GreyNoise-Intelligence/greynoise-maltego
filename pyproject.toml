@@ -1,0 +1,3 @@
+# Black formatting
+[tool.black]
+line-length = 120
