@@ -1,4 +1,4 @@
-futures
+greynoise>=2.0.0
 gunicorn
 maltego-trx
-greynoise>=0.8.0
+pre-commit

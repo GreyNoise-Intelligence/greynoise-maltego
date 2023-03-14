@@ -2,8 +2,9 @@ import datetime
 
 from greynoise import GreyNoise
 from maltego_trx.maltego import MaltegoMsg
-
 from maltego_trx.transform import DiscoverableTransform
+
+from .utility import INTEGRATION_NAME
 
 
 class GreyNoiseQueryByActor(DiscoverableTransform):
@@ -22,10 +23,7 @@ class GreyNoiseQueryByActor(DiscoverableTransform):
         except ValueError:
             modified_from_time = datetime.datetime.now().strftime("%Y-%m-%d")
             modified_to_time = datetime.datetime.now().strftime("%Y-%m-%d")
-        api_client = GreyNoise(
-            api_key=api_key,
-            integration_name="maltego-integration-v2.0.0",
-        )
+        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.Person"
