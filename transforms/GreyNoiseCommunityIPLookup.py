@@ -1,4 +1,4 @@
-from greynoise import GreyNoise
+from greynoise.api import APIConfig, GreyNoise
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.transform import DiscoverableTransform
@@ -49,11 +49,12 @@ class GreyNoiseCommunityIPLookup(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):
         api_key = request.TransformSettings["GNApiKey"]
-        api_client = GreyNoise(
+        api_config = APIConfig(
             api_key=api_key,
             integration_name=COMMUNITY_INTEGRATION_NAME,
             offering="community",
         )
+        api_client = GreyNoise(api_config)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"

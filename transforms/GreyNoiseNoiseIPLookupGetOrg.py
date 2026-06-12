@@ -1,4 +1,4 @@
-from greynoise import GreyNoise
+from greynoise.api import APIConfig, GreyNoise
 from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
@@ -9,7 +9,11 @@ class GreyNoiseNoiseIPLookupGetOrg(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
-        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_config = APIConfig(
+            api_key=api_key,
+            integration_name=INTEGRATION_NAME,
+        )
+        api_client = GreyNoise(api_config)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"
@@ -22,10 +26,15 @@ class GreyNoiseNoiseIPLookupGetOrg(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            resp = api_client.ip(request.Value)
-            if resp["seen"]:
-                if resp["metadata"]["organization"]:
-                    response.addEntity("maltego.Company", resp["metadata"]["organization"])
+            lookup_response = api_client.ip(request.Value)
+            if lookup_response.get("internet_scanner_intelligence", {}).get("found", False):
+                if lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("organization"):
+                    response.addEntity(
+                        "maltego.Company",
+                        lookup_response.get("internet_scanner_intelligence", {})
+                        .get("metadata", {})
+                        .get("organization"),
+                    )
                 else:
                     response.addUIMessage(f"The IP address {request.Value} has no associated Organization.")
 

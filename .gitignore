@@ -1,7 +1,8 @@
 .idea
-venv
+venv/
 *.pyc
 .DS_Store
+__pycache__/
 
 # testing files
 greynoise-brad.mtz

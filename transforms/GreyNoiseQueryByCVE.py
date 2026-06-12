@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from greynoise import GreyNoise
+from greynoise.api import APIConfig, GreyNoise
 from maltego_trx.maltego import MaltegoMsg
 from maltego_trx.transform import DiscoverableTransform
 
@@ -13,20 +13,17 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
         query_range = request.TransformSettings["queryTimeRange"]
-        asn = request.TransformSettings["asn"]
-        actor = request.TransformSettings["actor"]
-        port = request.TransformSettings["port"]
         try:
             from_time = int(query_range.split("-")[0].split(".")[0])
-            to_time = int(query_range.split("-")[1].split(".")[0])
-
-            modified_from_time = datetime.datetime.fromtimestamp(from_time).strftime("%Y-%m-%d")
-            modified_to_time = datetime.datetime.fromtimestamp(to_time).strftime("%Y-%m-%d")
+            from_date = datetime.datetime.fromtimestamp(from_time).date()
+            today = datetime.datetime.now().date()
+            days_from_today = (today - from_date).days
+            last_seen = f"{min(max(days_from_today, 1), 90)}d"
         except ValueError:
-            modified_from_time = datetime.datetime.now().strftime("%Y-%m-%d")
-            modified_to_time = datetime.datetime.now().strftime("%Y-%m-%d")
+            last_seen = "1d"
 
-        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_config = APIConfig(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_client = GreyNoise(api_config)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.CVE"
@@ -42,18 +39,10 @@ class GreyNoiseQueryByCVE(DiscoverableTransform):
             cve_pattern = "CVE-\d{4}-\d{4,7}"  # noqa: C605
             match = re.match(cve_pattern, request.Value)
             if match:
-                query_string = (
-                    "cve:" + request.Value + " last_seen:[" + modified_from_time + " TO " + modified_to_time + "]"
-                )
-                if asn:
-                    query_string = query_string + " asn:AS" + asn
-                if actor:
-                    query_string = query_string + " actor:'" + actor + "'"
-                if port and port != "0":
-                    query_string = query_string + " raw_data.scan.port:" + port
-                resp = api_client.query(query_string)
-                if resp["count"] > 1:
-                    for ip_details in resp["data"]:
+                query_string = "cve:" + request.Value + " last_seen:" + last_seen
+                query_response = api_client.query(query_string, quick=True)
+                if query_response.get("request_metadata", {}).get("count", 0) > 1:
+                    for ip_details in query_response.get("data", []):
                         response.addEntity("maltego.IPv4Address", ip_details["ip"])
 
                 else:
