@@ -1,4 +1,4 @@
-from greynoise import GreyNoise
+from greynoise.api import APIConfig, GreyNoise
 from maltego_trx.entities import ASNumber, Location, Person
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.overlays import OverlayPosition, OverlayType
@@ -36,6 +36,8 @@ def add_display_info(ip_ent: MaltegoEntity, classification, last_seen, link, nam
         colour = "#45e06f"
     elif classification == "malicious":
         colour = "#eb4d4b"
+    elif classification == "suspicious":
+        colour = "#ffa500"
 
     if colour:
         ip_ent.addProperty(
@@ -55,7 +57,11 @@ class GreyNoiseNoiseIPLookupAllDetails(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):  # noqa: C901
         api_key = request.TransformSettings["GNApiKey"]
-        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_config = APIConfig(
+            api_key=api_key,
+            integration_name=INTEGRATION_NAME,
+        )
+        api_client = GreyNoise(api_config)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"
@@ -68,62 +74,97 @@ class GreyNoiseNoiseIPLookupAllDetails(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            resp = api_client.ip(request.Value)
-            if resp["seen"]:
+            lookup_response = api_client.ip(request.Value)
+            if lookup_response.get("internet_scanner_intelligence", {}).get("found", False):
                 response.addEntity("greynoise.noise", "Noise Detected")
 
-                if resp["actor"] != "unknown":
-                    response.addEntity(Person, resp["actor"])
+                if lookup_response.get("internet_scanner_intelligence", {}).get("actor", "unknown") != "unknown":
+                    response.addEntity(
+                        Person, lookup_response.get("internet_scanner_intelligence", {}).get("actor", "unknown")
+                    )
 
-                if resp["classification"]:
-                    response.addEntity("greynoise.classification", resp["classification"])
+                if lookup_response.get("internet_scanner_intelligence", {}).get("classification"):
+                    response.addEntity(
+                        "greynoise.classification",
+                        lookup_response.get("internet_scanner_intelligence", {}).get("classification"),
+                    )
 
-                if resp["metadata"]["asn"]:
-                    response.addEntity(ASNumber, str(resp["metadata"]["asn"]).replace("AS", ""))
+                if lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("asn"):
+                    response.addEntity(
+                        ASNumber,
+                        str(
+                            lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("asn")
+                        ).replace("AS", ""),
+                    )
 
-                if resp["metadata"]["organization"]:
-                    response.addEntity("maltego.Company", resp["metadata"]["organization"])
+                if lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("organization"):
+                    response.addEntity(
+                        "maltego.Company",
+                        lookup_response.get("internet_scanner_intelligence", {})
+                        .get("metadata", {})
+                        .get("organization"),
+                    )
 
-                if resp["metadata"]["city"] and resp["metadata"]["country"] and resp["metadata"]["country_code"]:
+                if (
+                    lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("source_city")
+                    and lookup_response.get("internet_scanner_intelligence", {})
+                    .get("metadata", {})
+                    .get("source_country")
+                    and lookup_response.get("internet_scanner_intelligence", {})
+                    .get("metadata", {})
+                    .get("source_country_code")
+                ):
                     response.addEntity(
                         Location,
                         "{0}, {1} ({2})".format(
-                            resp["metadata"]["city"], resp["metadata"]["country"], resp["metadata"]["country_code"]
+                            lookup_response.get("internet_scanner_intelligence", {})
+                            .get("metadata", {})
+                            .get("source_city"),
+                            lookup_response.get("internet_scanner_intelligence", {})
+                            .get("metadata", {})
+                            .get("source_country"),
+                            lookup_response.get("internet_scanner_intelligence", {})
+                            .get("metadata", {})
+                            .get("source_country_code"),
                         ),
                     )
 
-                if resp["vpn"]:
-                    response.addEntity("maltego.Service", "VPN Service: " + resp.get("vpn_service"))
+                if lookup_response.get("internet_scanner_intelligence", {}).get("vpn"):
+                    response.addEntity(
+                        "maltego.Service",
+                        "VPN Service: " + lookup_response.get("internet_scanner_intelligence", {}).get("vpn_service"),
+                    )
 
-                if resp["bot"]:
-                    response.addEntity("maltego.Service", "Common Bot Activity")
-
-                if resp["metadata"]["tor"]:
+                if lookup_response.get("internet_scanner_intelligence", {}).get("metadata", {}).get("tor"):
                     response.addEntity("maltego.Service", "Tor Exit Node")
 
-                for cve in resp["cve"]:
+                for cve in lookup_response.get("internet_scanner_intelligence", {}).get("cve", []):
                     cve_entity = response.addEntity("maltego.CVE", cve)
                     cve_entity.setLinkLabel("Probes For")
 
-                for item in resp["raw_data"]["scan"]:
+                for item in (
+                    lookup_response.get("internet_scanner_intelligence", {}).get("raw_data", {}).get("scan", [])[:10]
+                ):
                     port_entity = response.addEntity("maltego.Port", item["port"])
                     port_entity.setLinkLabel("Scans For")
 
-                for tag in resp["tags"]:
-                    response.addEntity("maltego.Phrase", tag)
+                tag_names = []
+                for tag in lookup_response.get("internet_scanner_intelligence", {}).get("tags", [])[:10]:
+                    tag_names.append(tag.get("name"))
+                    response.addEntity("maltego.Phrase", tag.get("name"))
 
-                resp["link"] = "https://www.greynoise.io/viz/ip/" + resp["ip"]
+                lookup_response["link"] = "https://www.greynoise.io/viz/ip/" + str(request.Value)
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(
                     fieldName="gn_url",
                     displayName="GreyNoise URL",
-                    value=resp["link"],
+                    value=lookup_response["link"],
                     matchingRule="loose",
                 )
                 input_ip.addProperty(
                     fieldName="gn_last_seen",
                     displayName="GreyNoise last seen",
-                    value=resp["last_seen"],
+                    value=lookup_response.get("internet_scanner_intelligence", {}).get("last_seen"),
                     matchingRule="loose",
                 )
             else:
@@ -132,11 +173,11 @@ class GreyNoiseNoiseIPLookupAllDetails(DiscoverableTransform):
 
             add_display_info(
                 input_ip,
-                resp.get("classification"),
-                resp.get("last_seen"),
-                resp.get("link"),
-                resp.get("actor"),
-                resp.get("tags"),
+                lookup_response.get("internet_scanner_intelligence", {}).get("classification"),
+                lookup_response.get("internet_scanner_intelligence", {}).get("last_seen"),
+                lookup_response.get("link"),
+                lookup_response.get("internet_scanner_intelligence", {}).get("actor"),
+                tag_names,
             )
         except Exception as e:
             response.addUIMessage(e)

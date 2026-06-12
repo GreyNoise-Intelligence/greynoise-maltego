@@ -1,4 +1,4 @@
-from greynoise import GreyNoise
+from greynoise.api import APIConfig, GreyNoise
 from maltego_trx.maltego import MaltegoEntity, MaltegoMsg
 from maltego_trx.overlays import OverlayPosition, OverlayType
 from maltego_trx.transform import DiscoverableTransform
@@ -49,7 +49,8 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
     @classmethod
     def create_entities(cls, request: MaltegoMsg, response):
         api_key = request.TransformSettings["GNApiKey"]
-        api_client = GreyNoise(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_config = APIConfig(api_key=api_key, integration_name=INTEGRATION_NAME)
+        api_client = GreyNoise(api_config)
 
         # make a precise copy of the input to avoid creating a new graph entity
         type_name = "maltego.IPv4Address"
@@ -62,33 +63,43 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
             input_ip.addProperty(fieldName=k, value=v, matchingRule="loose")
 
         try:
-            resp = api_client.riot(request.Value)
-            if resp["riot"]:
+            lookup_response = api_client.ip(request.Value)
+            if lookup_response.get("business_service_intelligence", {}).get("found", False):
+                classification = ""
                 response.addEntity("greynoise.noise", "Common Business Service Detected")
 
-                if resp["name"] != "unknown":
-                    response.addEntity("maltego.Organization", resp["name"])
+                if lookup_response.get("business_service_intelligence", {}).get("name", "unknown") != "unknown":
+                    response.addEntity(
+                        "maltego.Organization",
+                        lookup_response.get("business_service_intelligence", {}).get("name", "unknown"),
+                    )
 
-                if resp["trust_level"] == "1":
-                    response.addEntity("greynoise.classification", "RIOT - Reasonably Ignore")
-                elif resp["trust_level"] == "2":
-                    response.addEntity("greynoise.classification", "RIOT - Commonly Seen")
+                if lookup_response.get("business_service_intelligence", {}).get("trust_level", "unknown") == "1":
+                    classification = "BSI - Reasonably Ignore"
+                    response.addEntity("greynoise.classification", classification)
+                elif lookup_response.get("business_service_intelligence", {}).get("trust_level", "unknown") == "2":
+                    classification = "BSI - Commonly Seen"
+                    response.addEntity("greynoise.classification", classification)
+                elif lookup_response.get("business_service_intelligence", {}).get("trust_level", "unknown") == "3":
+                    classification = "BSI - Context Only"
+                    response.addEntity("greynoise.classification", classification)
                 else:
-                    response.addEntity("greynoise.classification", "RIOT")
+                    classification = "BSI - Unknown"
+                    response.addEntity("greynoise.classification", classification)
 
-                resp["link"] = "https://www.greynoise.io/viz/riot/" + resp["ip"]
+                lookup_response["link"] = "https://www.greynoise.io/viz/ip/" + request.Value
 
                 # add dynamic properties instead of returning more to the graph
                 input_ip.addProperty(
                     fieldName="gn_url",
                     displayName="GreyNoise URL",
-                    value=resp["link"],
+                    value=lookup_response["link"],
                     matchingRule="loose",
                 )
                 input_ip.addProperty(
                     fieldName="gn_last_updated",
                     displayName="GreyNoise last updated",
-                    value=resp["last_updated"],
+                    value=lookup_response.get("business_service_intelligence", {}).get("last_updated", "unknown"),
                     matchingRule="loose",
                 )
             else:
@@ -97,10 +108,10 @@ class GreyNoiseRIOTIPLookup(DiscoverableTransform):
 
             add_display_info(
                 input_ip,
-                resp.get("classification"),
-                resp.get("last_updated"),
-                resp.get("link"),
-                resp.get("name"),
+                classification,
+                lookup_response.get("business_service_intelligence", {}).get("last_updated", None),
+                lookup_response.get("link"),
+                lookup_response.get("business_service_intelligence", {}).get("name", "unknown"),
             )
         except Exception as e:
             response.addUIMessage(e)
